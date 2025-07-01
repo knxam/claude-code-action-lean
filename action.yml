@@ -78,11 +78,22 @@ inputs:
     required: false
 
   # Auth configuration
-  anthropic_api_key:
-    description: "Anthropic API key"
-    required: false
   github_token:
     description: "GitHub token with repo and pull request permissions (optional if using GitHub App)"
+    required: false
+  
+  # OAuth configuration (required)
+  claude_access_token:
+    description: "Claude OAuth access token (for Claude Max subscribers)"
+    required: true
+  claude_refresh_token:
+    description: "Claude OAuth refresh token"
+    required: true
+  claude_expires_at:
+    description: "Claude OAuth token expiration timestamp"
+    required: true
+  secrets_admin_pat:
+    description: "Personal Access Token with secrets:write permission for auto-refresh"
     required: false
 
   max_turns:
@@ -156,8 +167,12 @@ runs:
         INPUT_CLAUDE_ENV: ${{ inputs.claude_env }}
         INPUT_FALLBACK_MODEL: ${{ inputs.fallback_model }}
         ANTHROPIC_MODEL: ${{ inputs.model || inputs.anthropic_model }}
-        ANTHROPIC_API_KEY: ${{ inputs.anthropic_api_key }}
         ANTHROPIC_BASE_URL: ${{ env.ANTHROPIC_BASE_URL }}
+        # OAuth inputs
+        INPUT_CLAUDE_ACCESS_TOKEN: ${{ inputs.claude_access_token }}
+        INPUT_CLAUDE_REFRESH_TOKEN: ${{ inputs.claude_refresh_token }}
+        INPUT_CLAUDE_EXPIRES_AT: ${{ inputs.claude_expires_at }}
+        INPUT_SECRETS_ADMIN_PAT: ${{ inputs.secrets_admin_pat }}
 
 
     - name: Update comment with job link

@@ -22,6 +22,7 @@ import { validateEnvironmentVariables } from "../claude-runner/validate-env";
 import { setupClaudeCodeSettings } from "../claude-runner/setup-claude-code-settings";
 import { preparePrompt } from "../claude-runner/prepare-prompt";
 import { runClaude } from "../claude-runner/run-claude";
+import { setupOAuth } from "../claude-runner/setup-oauth";
 
 async function run() {
   try {
@@ -105,6 +106,9 @@ async function run() {
     try {
       // Validate environment variables
       validateEnvironmentVariables();
+      
+      // Setup OAuth (always required now)
+      await setupOAuth();
       
       // Setup Claude Code settings
       await setupClaudeCodeSettings();

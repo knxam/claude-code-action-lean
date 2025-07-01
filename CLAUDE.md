@@ -4,7 +4,7 @@ This file provides guidance to Claude Code when working with code in this reposi
 
 ## Claude Code Action Lean
 
-This is a merged version of claude-code-action and claude-code-base-action, providing a single unified GitHub Action for Claude integration.
+This is a lean OAuth-only version of claude-code-action, optimized for Claude Max users who want a streamlined GitHub Action for Claude integration.
 
 ## Development Tools
 
@@ -29,7 +29,7 @@ This is a unified GitHub Action that enables Claude to interact with GitHub PRs 
 
 1. **Trigger Detection**: Uses validation modules to determine if Claude should respond based on comment/issue content
 2. **Context Gathering**: Fetches GitHub data (PRs, issues, comments) via data fetcher and formats it using data formatter
-3. **AI Integration**: Direct integration with Claude via Anthropic API
+3. **OAuth Authentication**: Requires Claude Max OAuth tokens with automatic refresh capability
 4. **Prompt Creation**: Generates context-rich prompts using create-prompt
 5. **MCP Server Integration**: Installs and configures GitHub MCP server for extended functionality
 6. **Claude Execution**: Runs Claude directly within the action using the claude-runner modules
@@ -37,8 +37,8 @@ This is a unified GitHub Action that enables Claude to interact with GitHub PRs 
 ### Key Components
 
 - **Trigger System**: Responds to `/claude` comments or issue assignments
-- **Authentication**: OIDC-based token exchange for secure GitHub interactions
-- **Cloud Integration**: Uses direct Anthropic API
+- **Authentication**: OAuth-based Claude Max authentication with auto-refresh
+- **GitHub Integration**: OIDC-based token exchange for secure GitHub interactions
 - **GitHub Operations**: Creates branches, posts comments, and manages PRs/issues
 
 ### Project Structure
@@ -48,11 +48,12 @@ src/
 ├── entrypoints/
 │   ├── prepare.ts          # Main entry point - handles trigger detection, GitHub ops, and Claude execution
 │   └── update-comment-link.ts # Updates comments with job links
-├── claude-runner/          # Claude execution modules (from claude-code-base-action)
+├── claude-runner/          # Claude execution modules
 │   ├── prepare-prompt.ts   # Prepares prompt for Claude
 │   ├── run-claude.ts       # Executes Claude with given configuration
 │   ├── setup-claude-code-settings.ts # Sets up Claude Code settings
-│   └── validate-env.ts     # Validates environment variables
+│   ├── setup-oauth.ts      # Handles OAuth token validation and refresh
+│   └── validate-env.ts     # Validates OAuth credentials
 ├── create-prompt/          # Prompt creation logic
 ├── github/                 # GitHub API interactions
 │   ├── api/               # API client and queries
@@ -67,5 +68,6 @@ src/
 
 - Actions are triggered by `@claude` comments or issue assignment unless a different trigger_phrase is specified
 - The action creates branches for issues and pushes to PR branches directly
-- All actions create OIDC tokens for secure authentication
+- Requires Claude Max OAuth tokens (see OAUTH_SETUP.md)
+- Supports automatic token refresh with SECRETS_ADMIN_PAT
 - Progress is tracked through dynamic comment updates with checkboxes
