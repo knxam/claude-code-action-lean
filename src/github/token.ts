@@ -45,7 +45,8 @@ async function retryWithBackoff<T>(
 
 async function getOidcToken(): Promise<string> {
   try {
-    const oidcToken = await core.getIDToken("claude-code-github-action");
+    // const oidcToken = await core.getIDToken("claude-code-github-action");
+    const oidcToken = await core.getIDToken("claude-copilot");
 
     return oidcToken;
   } catch (error) {
