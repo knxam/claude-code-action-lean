@@ -12,6 +12,9 @@ export async function checkHumanActor(
   octokit: Octokit,
   githubContext: ParsedGitHubContext,
 ) {
+  console.log('Checking human actor for event:', githubContext.eventName);
+  console.log('Actor:', githubContext.actor);
+
   // Allow bot for repository_dispatch events (webhook trigger)
   if (githubContext.eventName === 'repository_dispatch') {
     console.log('Allowing bot actor for repository_dispatch event.');
