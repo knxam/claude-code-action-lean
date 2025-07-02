@@ -14,6 +14,13 @@ export async function checkWritePermissions(
 ): Promise<boolean> {
   const { repository, actor } = context;
 
+  // If the actor is a bot, assume it has the necessary permissions.
+  // The permissions are managed at the GitHub App level, not as a collaborator.
+  if (actor.endsWith('[bot]')) {
+    core.info(`Actor ${actor} is a bot, skipping collaborator permission check.`);
+    return true; 
+  }
+
   try {
     core.info(`Checking permissions for actor: ${actor}`);
 
