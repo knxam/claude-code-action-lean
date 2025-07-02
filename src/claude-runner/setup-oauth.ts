@@ -22,38 +22,29 @@ interface TokenRefreshResponse {
 function tokenExpired(expiresAt: string | number): boolean {
   // Add 60 minutes buffer to refresh before actual expiry
   const bufferMs = 60 * 60 * 1000;
-  
+
   try {
     let expiresAtMs: number;
-    
-    if (typeof expiresAt === 'number') {
-      // Already a timestamp in milliseconds
+
+    if (typeof expiresAt === "number") {
       expiresAtMs = expiresAt;
-    } else if (typeof expiresAt === 'string') {
-      // Try to parse as number first (timestamp)
-      const timestamp = parseInt(expiresAt);
-      if (!isNaN(timestamp)) {
-        expiresAtMs = timestamp;
-      } else {
-        // Try to parse as ISO date string
-        const expiresAtDate = new Date(expiresAt);
-        if (!isNaN(expiresAtDate.getTime())) {
-          expiresAtMs = expiresAtDate.getTime();
-        } else {
-          console.warn(`Unable to parse expiresAt date: ${expiresAt}`);
-          return true;
-        }
+    } else if (typeof expiresAt === "string") {
+      const timestamp = parseInt(expiresAt, 10);
+      if (isNaN(timestamp)) {
+        console.warn(`Unable to parse expiresAt timestamp: ${expiresAt}`);
+        return true; // Treat as expired if unparsable
       }
+      expiresAtMs = timestamp;
     } else {
       console.warn(`Invalid expiresAt type: ${typeof expiresAt}`);
-      return true;
+      return true; // Treat as expired for unknown types
     }
-    
+
     const currentTime = Date.now();
-    return currentTime >= (expiresAtMs - bufferMs);
+    return currentTime >= expiresAtMs - bufferMs;
   } catch (error) {
     console.warn(`Error parsing expiresAt date: ${error}`);
-    return true;
+    return true; // Treat as expired on error
   }
 }
 

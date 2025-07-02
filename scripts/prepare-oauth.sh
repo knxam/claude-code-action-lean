@@ -45,14 +45,11 @@ echo "CLAUDE_AUTH_METHOD=oauth" >> $GITHUB_ENV
 
 # Check token expiration
 CURRENT_TIME=$(date +%s)
+EXPIRES_AT_SEC=0
 
-# Try different ways to parse date
+# The expiration time is expected to be a timestamp in milliseconds.
 if [[ "$CLAUDE_EXPIRES_AT" =~ ^[0-9]+$ ]]; then
-  # If it's a number (timestamp in milliseconds), convert to seconds
   EXPIRES_AT_SEC=$((CLAUDE_EXPIRES_AT / 1000))
-else
-  # If it's a date string, try to parse it
-  EXPIRES_AT_SEC=$(date -d "$CLAUDE_EXPIRES_AT" +%s 2>/dev/null || echo "0")
 fi
 
 if [[ $EXPIRES_AT_SEC -eq 0 ]]; then
