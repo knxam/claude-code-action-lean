@@ -6,6 +6,7 @@ import type {
   PullRequestEvent,
   PullRequestReviewEvent,
   PullRequestReviewCommentEvent,
+  RepositoryDispatchEvent,
 } from "@octokit/webhooks-types";
 
 export type ParsedGitHubContext = {
@@ -23,7 +24,8 @@ export type ParsedGitHubContext = {
     | IssueCommentEvent
     | PullRequestEvent
     | PullRequestReviewEvent
-    | PullRequestReviewCommentEvent;
+    | PullRequestReviewCommentEvent
+    | RepositoryDispatchEvent;
   entityNumber: number;
   isPR: boolean;
   inputs: {
@@ -110,6 +112,18 @@ export function parseGitHubContext(): ParsedGitHubContext {
         isPR: true,
       };
     }
+    case "repository_dispatch": {
+      return {
+        ...commonFields,
+        payload: context.payload as RepositoryDispatchEvent,
+        entityNumber: (
+          (context.payload as RepositoryDispatchEvent).client_payload as {
+            pr_number: number;
+          }
+        ).pr_number,
+        isPR: true,
+      };
+    }
     default:
       throw new Error(`Unsupported event type: ${context.eventName}`);
   }
@@ -151,6 +165,12 @@ export function isPullRequestReviewCommentEvent(
   context: ParsedGitHubContext,
 ): context is ParsedGitHubContext & { payload: PullRequestReviewCommentEvent } {
   return context.eventName === "pull_request_review_comment";
+}
+
+export function isRepositoryDispatchEvent(
+  context: ParsedGitHubContext,
+): context is ParsedGitHubContext & { payload: RepositoryDispatchEvent } {
+  return context.eventName === "repository_dispatch";
 }
 
 export function isIssuesAssignedEvent(

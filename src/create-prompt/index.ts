@@ -16,6 +16,7 @@ import {
   isIssueCommentEvent,
   isPullRequestReviewEvent,
   isPullRequestReviewCommentEvent,
+  isRepositoryDispatchEvent,
 } from "../github/context";
 import type { ParsedGitHubContext } from "../github/context";
 import type { CommonFields, PreparedContext, EventData } from "./types";
@@ -110,6 +111,8 @@ export function prepareContext(
     triggerUsername = context.payload.comment.user.login;
   } else if (isIssuesEvent(context)) {
     triggerUsername = context.payload.issue.user.login;
+  } else if (isRepositoryDispatchEvent(context)) {
+    triggerUsername = context.actor;
   }
 
   // Create infrastructure fields object
@@ -125,6 +128,7 @@ export function prepareContext(
     }),
     ...(directPrompt && { directPrompt }),
     ...(claudeBranch && { claudeBranch }),
+    ...(baseBranch && { baseBranch }),
   };
 
   // Parse event-specific data based on event type
@@ -301,6 +305,22 @@ export function prepareContext(
       };
       break;
 
+    case "repository_dispatch":
+      if (!prNumber) {
+        throw new Error("PR_NUMBER is required for repository_dispatch event");
+      }
+      if (!isPR) {
+        throw new Error("IS_PR must be true for repository_dispatch event");
+      }
+      eventData = {
+        eventName: "repository_dispatch",
+        isPR: true,
+        prNumber,
+        ...(claudeBranch && { claudeBranch }),
+        ...(baseBranch && { baseBranch }),
+      };
+      break;
+
     default:
       throw new Error(`Unsupported event type: ${eventName}`);
   }
@@ -361,6 +381,12 @@ export function getEventTypeAndContext(envVars: PreparedContext): {
         triggerContext: eventData.eventAction
           ? `pull request ${eventData.eventAction}`
           : `pull request event`,
+      };
+    
+    case "repository_dispatch":
+      return {
+        eventType: "REPOSITORY_DISPATCH",
+        triggerContext: "Repository dispatch from webhook",
       };
 
     default:

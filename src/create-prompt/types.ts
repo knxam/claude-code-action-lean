@@ -87,6 +87,14 @@ type PullRequestEvent = {
   baseBranch?: string;
 };
 
+type RepositoryDispatchEvent = {
+  eventName: "repository_dispatch";
+  isPR: true;
+  prNumber: string;
+  claudeBranch?: string;
+  baseBranch?: string;
+};
+
 // Union type for all possible event types
 export type EventData =
   | PullRequestReviewCommentEvent
@@ -96,7 +104,8 @@ export type EventData =
   | IssueOpenedEvent
   | IssueAssignedEvent
   | IssueLabeledEvent
-  | PullRequestEvent;
+  | PullRequestEvent
+  | RepositoryDispatchEvent;
 
 // Combined type with separate eventData field
 export type PreparedContext = CommonFields & {
