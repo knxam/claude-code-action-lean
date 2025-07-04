@@ -254,6 +254,31 @@ async function run() {
             
             console.log(`✅ Updated PR #${prNumber} title: ${newTitle}`);
           }
+          
+          // Add reviewer if Claude succeeded and we know who assigned the label
+          if (process.env.CLAUDE_SUCCESS === 'true') {
+            const labelAssignedBy = process.env.LABEL_ASSIGNED_BY;
+            if (labelAssignedBy) {
+              try {
+                // Request review from the person who assigned the label
+                await octokit.rest.pulls.requestReviewers({
+                  owner,
+                  repo,
+                  pull_number: prNumber,
+                  reviewers: [labelAssignedBy],
+                });
+                console.log(`✅ Added ${labelAssignedBy} as reviewer to PR #${prNumber}`);
+              } catch (reviewerError: any) {
+                // Handle specific error cases
+                if (reviewerError.status === 422) {
+                  console.log(`⚠️ Could not add ${labelAssignedBy} as reviewer - they may not have access or are the PR author`);
+                } else {
+                  console.error('Failed to add reviewer:', reviewerError);
+                }
+                // Don't fail the entire operation if reviewer addition fails
+              }
+            }
+          }
         } catch (prUpdateError) {
           console.error('Failed to update PR title:', prUpdateError);
           // Don't fail the entire operation if PR title update fails
