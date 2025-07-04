@@ -69,6 +69,12 @@ async function run() {
     }
 
     // Step 7: Fetch GitHub data (once for both branch setup and prompt creation)
+    console.log(`Fetching GitHub data for entity number: ${context.entityNumber}`);
+    
+    if (!context.entityNumber) {
+      throw new Error('No entity number (PR/Issue number) found in context');
+    }
+    
     const githubData = await fetchGitHubData({
       octokits: octokit,
       repository: `${context.repository.owner}/${context.repository.repo}`,

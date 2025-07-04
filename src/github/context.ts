@@ -113,15 +113,24 @@ export function parseGitHubContext(): ParsedGitHubContext {
       };
     }
     case "repository_dispatch": {
+      const clientPayload = (context.payload as RepositoryDispatchEvent).client_payload as {
+        pr_number?: number;
+        issue_number?: number;
+        is_pr?: boolean;
+      };
+      
+      console.log('Repository dispatch client_payload:', JSON.stringify(clientPayload));
+      
+      const entityNumber = clientPayload.pr_number || clientPayload.issue_number;
+      if (!entityNumber) {
+        console.error('No pr_number or issue_number in client_payload');
+      }
+      
       return {
         ...commonFields,
         payload: context.payload as RepositoryDispatchEvent,
-        entityNumber: (
-          (context.payload as RepositoryDispatchEvent).client_payload as {
-            pr_number: number;
-          }
-        ).pr_number,
-        isPR: true,
+        entityNumber: entityNumber || 0,
+        isPR: clientPayload.is_pr !== false, // default to true for backward compatibility
       };
     }
     default:

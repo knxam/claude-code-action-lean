@@ -15,7 +15,15 @@ async function run() {
 
     const isSuccess = process.env.CLAUDE_SUCCESS === 'true';
     const labelAssignedBy = process.env.LABEL_ASSIGNED_BY;
-    const prNumber = parseInt(process.env.PR_NUMBER || context.entityNumber.toString());
+    
+    // Get PR number from environment variable (set by action.yml)
+    const prNumberStr = process.env.PR_NUMBER;
+    if (!prNumberStr) {
+      console.log('No PR_NUMBER provided, skipping PR finalization');
+      return;
+    }
+    
+    const prNumber = parseInt(prNumberStr);
 
     // Only process PRs
     if (!context.isPR) {
