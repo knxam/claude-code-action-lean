@@ -184,23 +184,23 @@ runs:
         bun run ${GITHUB_ACTION_PATH}/src/entrypoints/update-comment-link.ts
       env:
         REPOSITORY: ${{ github.repository }}
-        PR_NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
+        PR_NUMBER: ${{ github.event.client_payload.pr_number || github.event.client_payload.issue_number }}
         CLAUDE_COMMENT_ID: ${{ steps.prepare.outputs.claude_comment_id }}
         GITHUB_RUN_ID: ${{ github.run_id }}
         GITHUB_TOKEN: ${{ steps.prepare.outputs.GITHUB_TOKEN }}
         GITHUB_EVENT_NAME: ${{ github.event_name }}
-        TRIGGER_COMMENT_ID: ${{ github.event.comment.id }}
+        TRIGGER_COMMENT_ID: ${{ github.event.client_payload.comment_id }}
         CLAUDE_BRANCH: ${{ steps.prepare.outputs.CLAUDE_BRANCH }}
-        IS_PR: ${{ github.event.issue.pull_request != null || github.event_name == 'pull_request_review_comment' }}
+        IS_PR: ${{ github.event.client_payload.is_pr == true || github.event.action == 'claude-process-pr' }}
         BASE_BRANCH: ${{ steps.prepare.outputs.BASE_BRANCH }}
         CLAUDE_SUCCESS: ${{ steps.prepare.outputs.conclusion == 'success' }}
         OUTPUT_FILE: ${{ steps.prepare.outputs.execution_file || '' }}
-        TRIGGER_USERNAME: ${{ github.event.comment.user.login || github.event.issue.user.login || github.event.pull_request.user.login || github.event.sender.login || github.triggering_actor || github.actor || '' }}
+        TRIGGER_USERNAME: ${{ github.event.client_payload.comment_author || github.event.client_payload.label_assigned_by || github.actor || '' }}
         PREPARE_SUCCESS: ${{ steps.prepare.outcome == 'success' }}
         PREPARE_ERROR: ${{ steps.prepare.outputs.prepare_error || '' }}
 
     - name: Finalize PR
-      if: steps.prepare.outputs.contains_trigger == 'true' && (github.event.issue.pull_request != null || github.event_name == 'pull_request' || github.event_name == 'pull_request_review_comment' || github.event_name == 'repository_dispatch') && always()
+      if: steps.prepare.outputs.contains_trigger == 'true' && github.event_name == 'repository_dispatch' && (github.event.client_payload.is_pr == true || github.event.action == 'claude-process-pr') && always()
       shell: bash
       run: |
         bun run ${GITHUB_ACTION_PATH}/src/entrypoints/finalize-pr.ts
