@@ -255,12 +255,12 @@ async function run() {
             console.log(`✅ Updated PR #${prNumber} title: ${newTitle}`);
           }
           
-          // Add assignee if Claude succeeded and we know who assigned the label
+          // Add assignee and request review if Claude succeeded and we know who assigned the label
           if (process.env.CLAUDE_SUCCESS === 'true') {
             const labelAssignedBy = process.env.LABEL_ASSIGNED_BY;
             if (labelAssignedBy) {
+              // First, assign the PR to the person who assigned the label
               try {
-                // Assign the PR to the person who assigned the label
                 await octokit.rest.issues.addAssignees({
                   owner,
                   repo,
@@ -269,13 +269,28 @@ async function run() {
                 });
                 console.log(`✅ Assigned PR #${prNumber} to ${labelAssignedBy}`);
               } catch (assigneeError: any) {
-                // Handle specific error cases
                 if (assigneeError.status === 422) {
                   console.log(`⚠️ Could not assign ${labelAssignedBy} to PR - they may not have access to the repository`);
                 } else {
                   console.error('Failed to add assignee:', assigneeError);
                 }
-                // Don't fail the entire operation if assignee addition fails
+              }
+              
+              // Then, request review from the same person
+              try {
+                await octokit.rest.pulls.requestReviewers({
+                  owner,
+                  repo,
+                  pull_number: prNumber,
+                  reviewers: [labelAssignedBy],
+                });
+                console.log(`✅ Requested review from ${labelAssignedBy} for PR #${prNumber}`);
+              } catch (reviewerError: any) {
+                if (reviewerError.status === 422) {
+                  console.log(`⚠️ Could not request review from ${labelAssignedBy} - they may be the PR author or not have access`);
+                } else {
+                  console.error('Failed to request review:', reviewerError);
+                }
               }
             }
           }
