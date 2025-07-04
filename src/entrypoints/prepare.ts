@@ -90,7 +90,7 @@ async function run() {
     );
 
     // Step 11: Get MCP configuration
-    const additionalMcpConfig = process.env.MCP_CONFIG || "";
+    const additionalMcpConfig = process.env.INPUT_MCP_CONFIG || process.env.MCP_CONFIG || "";
     const mcpConfig = await prepareMcpConfig({
       githubToken,
       owner: context.repository.owner,
@@ -120,12 +120,6 @@ async function run() {
       });
       
       // Run Claude with the prepared prompt
-      console.log("===== CLAUDE EXECUTION =====");
-      console.log("ALLOWED_TOOLS env:", process.env.ALLOWED_TOOLS);
-      console.log("INPUT_ALLOWED_TOOLS env:", process.env.INPUT_ALLOWED_TOOLS);
-      console.log("Using allowed tools:", process.env.ALLOWED_TOOLS || process.env.INPUT_ALLOWED_TOOLS);
-      console.log("===========================");
-      
       await runClaude(promptConfig.path, {
         allowedTools: process.env.ALLOWED_TOOLS || process.env.INPUT_ALLOWED_TOOLS,
         disallowedTools: process.env.DISALLOWED_TOOLS || process.env.INPUT_DISALLOWED_TOOLS,
