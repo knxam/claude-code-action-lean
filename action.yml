@@ -196,6 +196,16 @@ runs:
         TRIGGER_USERNAME: ${{ github.event.comment.user.login || github.event.issue.user.login || github.event.pull_request.user.login || github.event.sender.login || github.triggering_actor || github.actor || '' }}
         PREPARE_SUCCESS: ${{ steps.prepare.outcome == 'success' }}
         PREPARE_ERROR: ${{ steps.prepare.outputs.prepare_error || '' }}
+
+    - name: Finalize PR
+      if: steps.prepare.outputs.contains_trigger == 'true' && (github.event.issue.pull_request != null || github.event_name == 'pull_request' || github.event_name == 'pull_request_review_comment' || github.event_name == 'repository_dispatch') && always()
+      shell: bash
+      run: |
+        bun run ${GITHUB_ACTION_PATH}/src/entrypoints/finalize-pr.ts
+      env:
+        GITHUB_TOKEN: ${{ steps.prepare.outputs.GITHUB_TOKEN }}
+        PR_NUMBER: ${{ github.event.issue.number || github.event.pull_request.number || github.event.client_payload.pr_number }}
+        CLAUDE_SUCCESS: ${{ steps.prepare.outputs.conclusion == 'success' }}
         LABEL_ASSIGNED_BY: ${{ github.event.client_payload.label_assigned_by || '' }}
 
     - name: Display Claude Code Report
