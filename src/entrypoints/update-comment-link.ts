@@ -255,27 +255,27 @@ async function run() {
             console.log(`✅ Updated PR #${prNumber} title: ${newTitle}`);
           }
           
-          // Add reviewer if Claude succeeded and we know who assigned the label
+          // Add assignee if Claude succeeded and we know who assigned the label
           if (process.env.CLAUDE_SUCCESS === 'true') {
             const labelAssignedBy = process.env.LABEL_ASSIGNED_BY;
             if (labelAssignedBy) {
               try {
-                // Request review from the person who assigned the label
-                await octokit.rest.pulls.requestReviewers({
+                // Assign the PR to the person who assigned the label
+                await octokit.rest.issues.addAssignees({
                   owner,
                   repo,
-                  pull_number: prNumber,
-                  reviewers: [labelAssignedBy],
+                  issue_number: prNumber,
+                  assignees: [labelAssignedBy],
                 });
-                console.log(`✅ Added ${labelAssignedBy} as reviewer to PR #${prNumber}`);
-              } catch (reviewerError: any) {
+                console.log(`✅ Assigned PR #${prNumber} to ${labelAssignedBy}`);
+              } catch (assigneeError: any) {
                 // Handle specific error cases
-                if (reviewerError.status === 422) {
-                  console.log(`⚠️ Could not add ${labelAssignedBy} as reviewer - they may not have access or are the PR author`);
+                if (assigneeError.status === 422) {
+                  console.log(`⚠️ Could not assign ${labelAssignedBy} to PR - they may not have access to the repository`);
                 } else {
-                  console.error('Failed to add reviewer:', reviewerError);
+                  console.error('Failed to add assignee:', assigneeError);
                 }
-                // Don't fail the entire operation if reviewer addition fails
+                // Don't fail the entire operation if assignee addition fails
               }
             }
           }
