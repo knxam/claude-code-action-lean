@@ -173,6 +173,8 @@ runs:
         INPUT_CLAUDE_REFRESH_TOKEN: ${{ inputs.claude_refresh_token }}
         INPUT_CLAUDE_EXPIRES_AT: ${{ inputs.claude_expires_at }}
         INPUT_SECRETS_ADMIN_PAT: ${{ inputs.secrets_admin_pat }}
+        # Tracking comment from webhook
+        TRACKING_COMMENT_ID: ${{ github.event.client_payload.tracking_comment_id || '' }}
 
 
     - name: Update comment with job link

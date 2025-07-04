@@ -55,8 +55,18 @@ async function run() {
     // Step 5: Check if actor is human
     await checkHumanActor(octokit.rest, context);
 
-    // Step 6: Create initial tracking comment
-    const commentId = await createInitialComment(octokit.rest, context);
+    // Step 6: Create or use existing tracking comment
+    let commentId: number;
+    const existingTrackingCommentId = process.env.TRACKING_COMMENT_ID;
+    
+    if (existingTrackingCommentId) {
+      // Use existing tracking comment from webhook
+      commentId = parseInt(existingTrackingCommentId);
+      console.log(`Using existing tracking comment: ${commentId}`);
+    } else {
+      // Create new tracking comment
+      commentId = await createInitialComment(octokit.rest, context);
+    }
 
     // Step 7: Fetch GitHub data (once for both branch setup and prompt creation)
     const githubData = await fetchGitHubData({
