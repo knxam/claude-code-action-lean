@@ -216,6 +216,49 @@ async function run() {
       console.log(
         `✅ Updated ${isPRReviewComment ? "PR review" : "issue"} comment ${commentId} with job link`,
       );
+      
+      // Update PR title if this is a PR
+      if (context.isPR) {
+        try {
+          const prNumber = parseInt(process.env.PR_NUMBER || context.entityNumber.toString());
+          
+          // Get current PR details
+          const { data: pr } = await octokit.rest.pulls.get({
+            owner,
+            repo,
+            pull_number: prNumber,
+          });
+          
+          // Check if title starts with [WIP]
+          if (pr.title.startsWith('[WIP] ')) {
+            let newTitle = pr.title;
+            let newBody = pr.body || '';
+            
+            if (process.env.CLAUDE_SUCCESS === 'true') {
+              // Remove [WIP] prefix on success
+              newTitle = pr.title.substring(6);
+              newBody = newBody.replace('**Status:** 🚧 Work in Progress', '**Status:** ✅ Complete');
+            } else {
+              // Change to [FAILED] on failure
+              newTitle = '[FAILED] ' + pr.title.substring(6);
+              newBody = newBody.replace('**Status:** 🚧 Work in Progress', '**Status:** ❌ Failed');
+            }
+            
+            await octokit.rest.pulls.update({
+              owner,
+              repo,
+              pull_number: prNumber,
+              title: newTitle,
+              body: newBody,
+            });
+            
+            console.log(`✅ Updated PR #${prNumber} title: ${newTitle}`);
+          }
+        } catch (prUpdateError) {
+          console.error('Failed to update PR title:', prUpdateError);
+          // Don't fail the entire operation if PR title update fails
+        }
+      }
     } catch (updateError) {
       console.error(
         `Failed to update ${isPRReviewComment ? "PR review" : "issue"} comment:`,
