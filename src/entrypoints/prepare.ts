@@ -120,9 +120,15 @@ async function run() {
       });
       
       // Run Claude with the prepared prompt
+      console.log("===== CLAUDE EXECUTION =====");
+      console.log("ALLOWED_TOOLS env:", process.env.ALLOWED_TOOLS);
+      console.log("INPUT_ALLOWED_TOOLS env:", process.env.INPUT_ALLOWED_TOOLS);
+      console.log("Using allowed tools:", process.env.ALLOWED_TOOLS || process.env.INPUT_ALLOWED_TOOLS);
+      console.log("===========================");
+      
       await runClaude(promptConfig.path, {
-        allowedTools: process.env.INPUT_ALLOWED_TOOLS,
-        disallowedTools: process.env.INPUT_DISALLOWED_TOOLS,
+        allowedTools: process.env.ALLOWED_TOOLS || process.env.INPUT_ALLOWED_TOOLS,
+        disallowedTools: process.env.DISALLOWED_TOOLS || process.env.INPUT_DISALLOWED_TOOLS,
         maxTurns: process.env.INPUT_MAX_TURNS,
         mcpConfig: mcpConfig,
         systemPrompt: process.env.INPUT_SYSTEM_PROMPT,
