@@ -24,6 +24,7 @@ import { GITHUB_SERVER_URL } from "../github/api/config";
 export type { CommonFields, PreparedContext } from "./types";
 
 const BASE_ALLOWED_TOOLS = [
+  "Bash",
   "Edit",
   "MultiEdit",
   "Glob",
