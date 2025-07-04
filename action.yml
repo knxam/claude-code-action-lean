@@ -5,17 +5,6 @@ branding:
   color: "orange"
 
 inputs:
-  trigger_phrase:
-    description: "The trigger phrase to look for in comments or issue body"
-    required: false
-    default: "@claude"
-  assignee_trigger:
-    description: "The assignee username that triggers the action (e.g. @claude)"
-    required: false
-  label_trigger:
-    description: "The label that triggers the action (e.g. claude)"
-    required: false
-    default: "claude"
   base_branch:
     description: "The branch to use as the base/source when creating new branches (defaults to repository default branch)"
     required: false
@@ -142,9 +131,6 @@ runs:
       run: |
         bun run ${GITHUB_ACTION_PATH}/src/entrypoints/prepare.ts
       env:
-        TRIGGER_PHRASE: ${{ inputs.trigger_phrase }}
-        ASSIGNEE_TRIGGER: ${{ inputs.assignee_trigger }}
-        LABEL_TRIGGER: ${{ inputs.label_trigger }}
         BASE_BRANCH: ${{ inputs.base_branch }}
         BRANCH_PREFIX: ${{ inputs.branch_prefix }}
         ALLOWED_TOOLS: ${{ inputs.allowed_tools }}

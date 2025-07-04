@@ -165,7 +165,6 @@ The workflow triggers on:
 
 ### Action Configuration
 
-- `trigger_phrase`: Comment trigger (default: "@claude")
 - `model`: Claude model to use
 - `max_turns`: Maximum conversation turns
 - `custom_instructions`: Additional instructions for Claude

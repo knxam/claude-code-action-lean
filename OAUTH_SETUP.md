@@ -55,7 +55,6 @@ Update your GitHub workflow to use OAuth:
     secrets_admin_pat: ${{ secrets.SECRETS_ADMIN_PAT }} # Optional, for auto-refresh
     
     # Other configuration...
-    trigger_phrase: "@claude"
 ```
 
 ## How It Works
