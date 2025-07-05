@@ -50,6 +50,10 @@ inputs:
     description: "Only refresh OAuth tokens without running Claude (for periodic token maintenance)"
     required: false
     default: "false"
+  force_refresh:
+    description: "Force refresh tokens even if they are not expired (only used with token_refresh_only)"
+    required: false
+    default: "false"
 
   # Additional inputs from base action
   prompt:
@@ -143,6 +147,8 @@ runs:
         INPUT_CLAUDE_REFRESH_TOKEN: ${{ inputs.claude_refresh_token }}
         INPUT_CLAUDE_EXPIRES_AT: ${{ inputs.claude_expires_at }}
         INPUT_SECRETS_ADMIN_PAT: ${{ inputs.secrets_admin_pat }}
+        # Force refresh flag
+        INPUT_FORCE_REFRESH: ${{ inputs.force_refresh }}
 
     - name: Prepare action
       id: prepare

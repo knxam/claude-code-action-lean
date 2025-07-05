@@ -130,6 +130,9 @@ export async function setupOAuth(): Promise<void> {
     secretsAdminPat: process.env.INPUT_SECRETS_ADMIN_PAT,
   };
 
+  // Check if force refresh is requested
+  const forceRefresh = process.env.INPUT_FORCE_REFRESH === 'true';
+
   // Debug log
   console.log(`expiresAt value: ${credentials.expiresAt}`);
 
@@ -144,8 +147,11 @@ export async function setupOAuth(): Promise<void> {
   let refreshToken = credentials.refreshToken;
   let expiresAt: string | number = credentials.expiresAt;
 
-  // Check if token needs refresh
-  if (tokenExpired(expiresAt)) {
+  // Check if token needs refresh (either expired or force refresh requested)
+  if (tokenExpired(expiresAt) || forceRefresh) {
+    if (forceRefresh) {
+      console.log('🔄 Force refresh requested, refreshing tokens...');
+    }
     if (!credentials.secretsAdminPat) {
       console.warn(`
 ⚠️  OAuth token is expiring soon but SECRETS_ADMIN_PAT is not set!
