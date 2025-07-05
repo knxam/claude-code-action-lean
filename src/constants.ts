@@ -11,7 +11,4 @@ export const CONFIG = {
   
   // Docker
   GITHUB_MCP_SERVER_IMAGE: "ghcr.io/github/github-mcp-server:sha-6d69797",
-  
-  // Версии
-  CLAUDE_CODE_VERSION: "1.0.35", // Также обновите в action.yml:126
 } as const;
