@@ -45,6 +45,12 @@ inputs:
     required: false
     default: ""
 
+  # Token refresh mode
+  token_refresh_only:
+    description: "Only refresh OAuth tokens without running Claude (for periodic token maintenance)"
+    required: false
+    default: "false"
+
   # Additional inputs from base action
   prompt:
     description: "The prompt to send to Claude Code (mutually exclusive with prompt_file)"
@@ -97,7 +103,7 @@ inputs:
 outputs:
   conclusion:
     description: "Execution status of Claude Code ('success' or 'failure')"
-    value: ${{ steps.prepare.outputs.conclusion }}
+    value: ${{ steps.refresh-tokens.outputs.conclusion || steps.prepare.outputs.conclusion }}
   execution_file:
     description: "Path to the Claude Code execution output file"
     value: ${{ steps.prepare.outputs.execution_file }}
@@ -125,8 +131,22 @@ runs:
       shell: bash
       run: npm install -g @anthropic-ai/claude-code@1.0.43
 
+    - name: Refresh tokens only
+      id: refresh-tokens
+      if: inputs.token_refresh_only == 'true'
+      shell: bash
+      run: |
+        bun run ${GITHUB_ACTION_PATH}/src/entrypoints/refresh-tokens.ts
+      env:
+        # OAuth inputs
+        INPUT_CLAUDE_ACCESS_TOKEN: ${{ inputs.claude_access_token }}
+        INPUT_CLAUDE_REFRESH_TOKEN: ${{ inputs.claude_refresh_token }}
+        INPUT_CLAUDE_EXPIRES_AT: ${{ inputs.claude_expires_at }}
+        INPUT_SECRETS_ADMIN_PAT: ${{ inputs.secrets_admin_pat }}
+
     - name: Prepare action
       id: prepare
+      if: inputs.token_refresh_only != 'true'
       shell: bash
       run: |
         bun run ${GITHUB_ACTION_PATH}/src/entrypoints/prepare.ts
@@ -164,7 +184,7 @@ runs:
 
 
     - name: Update comment with job link
-      if: steps.prepare.outputs.contains_trigger == 'true' && steps.prepare.outputs.claude_comment_id && always()
+      if: inputs.token_refresh_only != 'true' && steps.prepare.outputs.contains_trigger == 'true' && steps.prepare.outputs.claude_comment_id && always()
       shell: bash
       run: |
         bun run ${GITHUB_ACTION_PATH}/src/entrypoints/update-comment-link.ts
@@ -186,7 +206,7 @@ runs:
         PREPARE_ERROR: ${{ steps.prepare.outputs.prepare_error || '' }}
 
     - name: Finalize PR
-      if: steps.prepare.outputs.contains_trigger == 'true' && github.event_name == 'repository_dispatch' && (github.event.client_payload.is_pr == true || github.event.action == 'claude-process-pr') && always()
+      if: inputs.token_refresh_only != 'true' && steps.prepare.outputs.contains_trigger == 'true' && github.event_name == 'repository_dispatch' && (github.event.client_payload.is_pr == true || github.event.action == 'claude-process-pr') && always()
       shell: bash
       run: |
         bun run ${GITHUB_ACTION_PATH}/src/entrypoints/finalize-pr.ts
@@ -197,7 +217,7 @@ runs:
         LABEL_ASSIGNED_BY: ${{ github.event.client_payload.label_assigned_by || '' }}
 
     - name: Display Claude Code Report
-      if: steps.prepare.outputs.contains_trigger == 'true' && steps.prepare.outputs.execution_file != ''
+      if: inputs.token_refresh_only != 'true' && steps.prepare.outputs.contains_trigger == 'true' && steps.prepare.outputs.execution_file != ''
       shell: bash
       run: |
         echo "## Claude Code Report" >> $GITHUB_STEP_SUMMARY
@@ -206,7 +226,7 @@ runs:
         echo '```' >> $GITHUB_STEP_SUMMARY
 
     - name: Revoke app token
-      if: always() && inputs.github_token == ''
+      if: inputs.token_refresh_only != 'true' && always() && inputs.github_token == ''
       shell: bash
       run: |
         curl -L \
