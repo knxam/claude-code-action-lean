@@ -1,5 +1,6 @@
 import * as core from "@actions/core";
 import { GITHUB_API_URL } from "../github/api/config";
+import { CONFIG } from "../constants";
 
 type PrepareConfigParams = {
   githubToken: string;
@@ -62,7 +63,7 @@ export async function prepareMcpConfig(
           "--rm",
           "-e",
           "GITHUB_PERSONAL_ACCESS_TOKEN",
-          "ghcr.io/github/github-mcp-server:sha-6d69797", // https://github.com/github/github-mcp-server/releases/tag/v0.5.0
+          CONFIG.GITHUB_MCP_SERVER_IMAGE, // https://github.com/github/github-mcp-server/releases/tag/v0.5.0
         ],
         env: {
           GITHUB_PERSONAL_ACCESS_TOKEN: githubToken,

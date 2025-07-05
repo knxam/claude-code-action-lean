@@ -1,9 +1,7 @@
 import { execSync } from "child_process";
 import * as path from "path";
 import * as fs from "fs/promises";
-
-const OAUTH_TOKEN_URL = 'https://console.anthropic.com/v1/oauth/token';
-const CLIENT_ID = '9d1c250a-e61b-44d9-88ed-5944d1962f5e';
+import { CONFIG } from "../constants";
 
 interface OAuthCredentials {
   accessToken: string;
@@ -52,7 +50,7 @@ async function performRefresh(refreshToken: string): Promise<{ accessToken: stri
   try {
     console.log(`Attempting to refresh token using refresh token: ${refreshToken.substring(0, 10)}...`);
     
-    const response = await fetch(OAUTH_TOKEN_URL, {
+    const response = await fetch(CONFIG.ANTHROPIC_OAUTH_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -60,7 +58,7 @@ async function performRefresh(refreshToken: string): Promise<{ accessToken: stri
       body: JSON.stringify({
         grant_type: 'refresh_token',
         refresh_token: refreshToken,
-        client_id: CLIENT_ID,
+        client_id: CONFIG.ANTHROPIC_CLIENT_ID,
       }),
     });
 

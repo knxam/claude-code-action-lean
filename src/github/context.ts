@@ -8,6 +8,7 @@ import type {
   PullRequestReviewCommentEvent,
   RepositoryDispatchEvent,
 } from "@octokit/webhooks-types";
+import { CONFIG } from "../constants";
 
 export type ParsedGitHubContext = {
   runId: string;
@@ -57,7 +58,7 @@ export function parseGitHubContext(): ParsedGitHubContext {
       customInstructions: process.env.CUSTOM_INSTRUCTIONS ?? "",
       directPrompt: process.env.DIRECT_PROMPT ?? "",
       baseBranch: process.env.BASE_BRANCH,
-      branchPrefix: process.env.BRANCH_PREFIX ?? "claude/",
+      branchPrefix: process.env.BRANCH_PREFIX ?? CONFIG.DEFAULT_BRANCH_PREFIX,
     },
   };
 
